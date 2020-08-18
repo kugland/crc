@@ -23,6 +23,7 @@ test: build/crc
 .DELETE_ON_ERROR:
 
 build/crc: $(CRC_SRC) $(CRC_HDR)
+	test -d build || mkdir build
 	$(CC) $(CFLAGS) -o $@ $(CRC_MAIN) $(CRC_SRC)
 
 src/crc_catalog.c: catalog/crc_catalog.csv
