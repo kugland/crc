@@ -29,18 +29,26 @@ CRC_COMPUTATION_UPDATE(uint_fast64_t, crc_computation_update_u64)
 
 crc_computation_t* crc_computation_init(const crc_parameters_t* params)
 {
-  crc_computation_t* comp = (crc_computation_t*) malloc(sizeof(crc_computation_t));
+  crc_computation_t* comp = malloc(sizeof(crc_computation_t));
   comp->width   = params->width;
-  comp->poly    = reflect_u64(comp->width, params->poly);
+  comp->poly    = reflect_u64(params->width, params->poly);
   comp->refin   = !params->refin;
   comp->refout  = !params->refout;
   comp->xorout  = params->xorout;
-  comp->table   = crc_table_build(comp->width, comp->poly);
-  comp->crc     = reflect_u64(comp->width, params->init);
-  if      (comp->width <= 8)  comp->update = crc_computation_update_u8;
-  else if (comp->width <= 16) comp->update = crc_computation_update_u16;
-  else if (comp->width <= 32) comp->update = crc_computation_update_u32;
-  else                        comp->update = crc_computation_update_u64;
+  comp->crc     = reflect_u64(params->width, params->init);
+  if (comp->width <= 8) {
+    comp->table  = crc_table_build_u8(comp->poly);
+    comp->update = crc_computation_update_u8;
+  } else if (comp->width <= 16) {
+    comp->table  = crc_table_build_u16(comp->poly);
+    comp->update = crc_computation_update_u16;
+  } else if (comp->width <= 32) {
+    comp->table  = crc_table_build_u32(comp->poly);
+    comp->update = crc_computation_update_u32;
+  } else {
+    comp->table  = crc_table_build_u64(comp->poly);
+    comp->update = crc_computation_update_u64;
+  }
   return comp;
 }
 
