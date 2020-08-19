@@ -2,14 +2,13 @@ CC := gcc
 ifeq ($(DEBUG),1)
 CFLAGS := -std=c11 -g
 else
-CFLAGS := -std=c11 -O2 -march=native -fPIC -fwhole-program -flto -DNDEBUG
+CFLAGS := -std=c11 -O2 -march=native -fPIC -DNDEBUG
 endif
 ifndef DESTDIR
 DESTDIR := /usr/local/bin
 endif
 
 CRC_SRC := $(wildcard src/*.c)
-CRC_HDR := $(wildcard src/*.h)
 
 all: build/crc
 
@@ -22,12 +21,24 @@ test: build/crc
 
 .DELETE_ON_ERROR:
 
-build/crc: $(CRC_SRC) $(CRC_HDR)
-	test -d build || mkdir build
-	$(CC) $(CFLAGS) -o $@ $(CRC_MAIN) $(CRC_SRC)
+build/crc: $(CRC_SRC:src/%.c=build/%.o)
+	$(CC) $(CFLAGS) -o $@ $?
+
+build/%.o: src/%.c
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 src/crc_catalog.c: catalog/crc_catalog.csv
 	gawk -M --non-decimal-data -f catalog/parse_crc_catalog.awk < $< >$@
 
 clean:
 	-rm build/crc
+	-rm build/*.o
+	-rm build/*.d
+
+build/%.d: src/%.c
+	@set -e; rm -f $@; \
+  	$(CC) -M $(CPPFLAGS) $< > $@.$$$$; \
+    sed 's,\($*\)\.o[ :]*,build/\1.o $@ : ,g' < $@.$$$$ > $@; \
+    rm -f $@.$$$$
+
+include $(CRC_SRC:src/%.c=build/%.d)
