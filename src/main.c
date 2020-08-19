@@ -12,8 +12,8 @@ int main(int argc, const char** argv) {
     const crc_parameters_t* params = &crc_catalog[i];
     crc_computation_t* comp = crc_computation_init(params);
     crc_computation_update(comp, "123456789", 9);
-    const uint_fast64_t residue = crc_computation_residue(comp);
-    const uint_fast64_t check = crc_computation_finish(comp);
+    uint_fast64_t check, residue;
+    crc_computation_finish(comp, &check, &residue);
     printf("Testing %s", params->names[0]);
     printf(" (poly=0x%jx, init=0x%jx, refin=%s, refout=%s, xorout=0x%jx)\n",
            params->poly, params->init, params->refin ? "true" : "false",

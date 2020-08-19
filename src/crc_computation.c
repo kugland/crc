@@ -34,7 +34,7 @@ crc_computation_t* crc_computation_init(const crc_parameters_t* params)
   comp->poly    = reflect_u64(params->width, params->poly);
   comp->refin   = !params->refin;
   comp->refout  = !params->refout;
-  comp->xorout  = params->xorout;
+  comp->xorout  = reflect_u64(params->width, params->xorout);
   comp->crc     = reflect_u64(params->width, params->init);
   if (comp->width <= 8) {
     comp->table  = crc_table_build_u8(comp->poly);
@@ -57,42 +57,18 @@ void crc_computation_update(crc_computation_t* comp, const char* buffer, size_t 
   comp->update(comp, buffer, size);
 }
 
-void crc_computation_update_bit(crc_computation_t* comp, bool bit)
+void crc_computation_finish(crc_computation_t* comp, uint_fast64_t* crc, uint_fast64_t* residue)
 {
-  comp->crc ^= bit ? 1 : 0;
-  bool lsb = comp->crc & 1;
-  comp->crc >>= 1;
-  if (lsb)
-    comp->crc ^= comp->poly;
-}
-
-uint_fast64_t crc_computation_final_value(crc_computation_t* comp, bool do_xorout)
-{
-  uint_fast64_t crc = comp->refout ? reflect_u64(comp->width, comp->crc) : comp->crc;
-  uint_fast64_t xorout = do_xorout ? comp->xorout : 0;
-  return crc ^ xorout;
-}
-
-uint_fast64_t crc_computation_residue(crc_computation_t* comp)
-{
-  const uint_fast64_t crc_copy = comp->crc;
-  const uint_fast64_t crc_final = crc_computation_final_value(comp, true);
-  comp->crc ^= comp->refout ? reflect_u64(comp->width, crc_final) : crc_final;
+  *crc = comp->crc ^ comp->xorout;
+  comp->crc = comp->xorout;
   for (int i = 0; i < comp->width; i++) {
-    bool lsb = comp->crc & 1;
-    comp->crc >>= 1;
-    if (lsb)
-      comp->crc ^= comp->poly;
+    comp->crc = comp->crc & 1 ? (comp->crc >> 1) ^ comp->poly : comp->crc >> 1;
   }
-  uint_fast64_t residue = crc_computation_final_value(comp, false);
-  comp->crc = crc_copy;
-  return residue;
-}
-
-uint_fast64_t crc_computation_finish(crc_computation_t* comp)
-{
-  uint_fast64_t crc = crc_computation_final_value(comp, true);
+  *residue = comp->crc;
+  if (comp->refout) {
+    *crc = reflect_u64(comp->width, *crc);
+    *residue = reflect_u64(comp->width, *residue);
+  }
   free(comp->table);
   free(comp);
-  return crc;
 }
