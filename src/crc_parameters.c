@@ -9,7 +9,7 @@ crc_parameters_t* crc_parameters_find(const crc_parameters_t* catalog, const cha
     for (int i = 0; catalog[i].width != 0; i++)
       for (int j = 0; catalog[i].names[j] != NULL; j++)
         if (strcmp(catalog[i].names[j], name) == 0) {
-          crc_parameters_t* params = (crc_parameters_t*) malloc(sizeof(crc_parameters_t));
+          crc_parameters_t* params = malloc(sizeof(crc_parameters_t));
           memcpy(params, &catalog[i], sizeof(crc_parameters_t));
           return params;
         }

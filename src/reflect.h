@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-extern uint_fast8_t reflect_u8[256];
+extern const uint_fast8_t reflect_u8[256];
 
 __attribute__((cold))
 uint_fast64_t reflect_u64(int width, uint_fast64_t value);
