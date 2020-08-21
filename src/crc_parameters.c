@@ -1,20 +1,19 @@
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "crc_parameters.h"
 
-crc_parameters_t* crc_parameters_find(const crc_parameters_t* catalog, const char* name)
+bool crc_parameters_find(const crc_parameters_t* catalog, const char* name, crc_parameters_t* params)
 {
   if (name != NULL)
     for (int i = 0; catalog[i].width != 0; i++)
       for (int j = 0; catalog[i].names[j] != NULL; j++)
         if (strcmp(catalog[i].names[j], name) == 0) {
-          crc_parameters_t* params = malloc(sizeof(crc_parameters_t));
           memcpy(params, &catalog[i], sizeof(crc_parameters_t));
-          return params;
+          return true;
         }
-
-  return NULL;
+  return false;
 }
 /*
 #include "crc_catalog.h"

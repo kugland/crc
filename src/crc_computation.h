@@ -10,7 +10,7 @@ struct crc_computation_t;
 typedef struct crc_computation_t {
   uint_fast64_t crc;
   void *table;
-  int width;
+  unsigned width;
   uint_fast64_t poly;
   bool refin;
   bool refout;

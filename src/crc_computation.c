@@ -59,16 +59,22 @@ void crc_computation_update(crc_computation_t* comp, const char* buffer, size_t 
 
 void crc_computation_finish(crc_computation_t* comp, uint_fast64_t* crc, uint_fast64_t* residue)
 {
-  *crc = comp->crc ^ comp->xorout;
-  comp->crc = comp->xorout;
-  for (int i = 0; i < comp->width; i++) {
-    comp->crc = comp->crc & 1 ? (comp->crc >> 1) ^ comp->poly : comp->crc >> 1;
+  if (comp != NULL) {
+    if (crc != NULL)
+      *crc = comp->crc ^ comp->xorout;
+    if (residue != NULL) {
+      comp->crc = comp->xorout;
+      for (int i = 0; i < comp->width; i++)
+        comp->crc = comp->crc & 1 ? (comp->crc >> 1) ^ comp->poly : comp->crc >> 1;
+      *residue = comp->crc;
+      if (comp->refout) {
+        *crc = reflect_u64(comp->width, *crc);
+        *residue = reflect_u64(comp->width, *residue);
+      }
+    }
+    free(comp->table);
+    free(comp);
+  } else {
+    abort();
   }
-  *residue = comp->crc;
-  if (comp->refout) {
-    *crc = reflect_u64(comp->width, *crc);
-    *residue = reflect_u64(comp->width, *residue);
-  }
-  free(comp->table);
-  free(comp);
 }

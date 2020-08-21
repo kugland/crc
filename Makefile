@@ -1,14 +1,16 @@
 CC := gcc
 ifeq ($(DEBUG),1)
-CFLAGS := -std=c11 -g
+CFLAGS := -std=gnu11 -g
 else
-CFLAGS := -std=c11 -O2 -march=native -fPIC -DNDEBUG
+CFLAGS := -std=gnu11 -O2 -march=native -fPIC -DNDEBUG
 endif
 ifndef DESTDIR
 DESTDIR := /usr/local/bin
 endif
 
 CRC_SRC := $(wildcard src/*.c)
+
+#.DEFAULT_GOAL: all
 
 all: build/crc
 
@@ -22,7 +24,7 @@ test: build/crc
 .DELETE_ON_ERROR:
 
 build/crc: $(CRC_SRC:src/%.c=build/%.o)
-	$(CC) $(CFLAGS) -o $@ $?
+	$(CC) $(CFLAGS) -o $@ $^
 
 build/%.o: src/%.c
 	$(CC) $(CFLAGS) -c -o $@ $<
@@ -41,4 +43,6 @@ build/%.d: src/%.c
     sed 's,\($*\)\.o[ :]*,build/\1.o $@ : ,g' < $@.$$$$ > $@; \
     rm -f $@.$$$$
 
+ifneq ($(MAKECMDGOALS),clean)
 include $(CRC_SRC:src/%.c=build/%.d)
+endif

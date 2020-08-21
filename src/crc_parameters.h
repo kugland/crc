@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 typedef struct {
-  int           width;
+  unsigned      width;
   const char   *names[6];
   uint_fast64_t poly;
   uint_fast64_t init;
@@ -17,6 +17,6 @@ typedef struct {
 } crc_parameters_t;
 
 __attribute__((cold))
-crc_parameters_t* crc_parameters_find(const crc_parameters_t* catalog, const char* name);
+bool crc_parameters_find(const crc_parameters_t* catalog, const char* name, crc_parameters_t* params);
 
 #endif /* CRC_CRC_PARAMETERS_H */
